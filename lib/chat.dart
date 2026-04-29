@@ -1482,6 +1482,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     final heroUrl = _boardItemImage(hero);
     final bottomUrl = _boardItemImage(bottom);
     final footwearUrl = _boardItemImage(footwear);
+    final hasHero = heroUrl != null && heroUrl.isNotEmpty;
+    final hasBottom = bottomUrl != null && bottomUrl.isNotEmpty;
+    final useBalancedTwoPiece = dress == null && hasHero && hasBottom;
 
     return Container(
       color: const Color(0xFFEAEAEA),
@@ -1511,27 +1514,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: _boardCutoutImage(
-                      imageUrl: bottomUrl,
-                      t: t,
-                      fit: BoxFit.contain,
-                      fallbackIcon: Icons.dry_cleaning_outlined,
-                    ),
-                  ),
-                ),
-                if (heroUrl != null && heroUrl.isNotEmpty)
-                  Positioned.fill(
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: FractionallySizedBox(
-                        heightFactor: bottomUrl == null || bottomUrl.isEmpty || dress != null
-                            ? 1.0
-                            : 0.64,
+            child: useBalancedTwoPiece
+                ? Column(
+                    children: [
+                      Expanded(
                         child: _boardCutoutImage(
                           imageUrl: heroUrl,
                           t: t,
@@ -1539,23 +1525,63 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           fallbackIcon: Icons.checkroom_outlined,
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 6),
+                      Expanded(
+                        child: _boardCutoutImage(
+                          imageUrl: bottomUrl,
+                          t: t,
+                          fit: BoxFit.contain,
+                          fallbackIcon: Icons.dry_cleaning_outlined,
+                        ),
+                      ),
+                    ],
+                  )
+                : Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: _boardCutoutImage(
+                            imageUrl: bottomUrl,
+                            t: t,
+                            fit: BoxFit.contain,
+                            fallbackIcon: Icons.dry_cleaning_outlined,
+                          ),
+                        ),
+                      ),
+                      if (hasHero)
+                        Positioned.fill(
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: FractionallySizedBox(
+                              heightFactor:
+                                  bottomUrl == null || bottomUrl.isEmpty || dress != null
+                                  ? 1.0
+                                  : 0.64,
+                              child: _boardCutoutImage(
+                                imageUrl: heroUrl,
+                                t: t,
+                                fit: BoxFit.contain,
+                                fallbackIcon: Icons.checkroom_outlined,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if ((footwearUrl != null && footwearUrl.isNotEmpty) && dress != null)
+                        Positioned(
+                          bottom: 2,
+                          left: 4,
+                          right: 4,
+                          height: 48,
+                          child: _boardCutoutImage(
+                            imageUrl: footwearUrl,
+                            t: t,
+                            fit: BoxFit.contain,
+                            fallbackIcon: Icons.hiking_outlined,
+                          ),
+                        ),
+                    ],
                   ),
-                if ((footwearUrl != null && footwearUrl.isNotEmpty) && dress != null)
-                  Positioned(
-                    bottom: 2,
-                    left: 4,
-                    right: 4,
-                    height: 48,
-                    child: _boardCutoutImage(
-                      imageUrl: footwearUrl,
-                      t: t,
-                      fit: BoxFit.contain,
-                      fallbackIcon: Icons.hiking_outlined,
-                    ),
-                  ),
-              ],
-            ),
           ),
         ],
       ),
